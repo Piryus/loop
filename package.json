@@ -1,0 +1,45 @@
+{
+  "name": "@loop/widget",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Self-hosted feedback widget — capture, annotate, ship to Linear.",
+  "license": "MIT",
+  "author": "Emile Legendre",
+  "keywords": [
+    "feedback",
+    "widget",
+    "screenshot",
+    "annotation",
+    "bug-report",
+    "linear",
+    "self-hosted"
+  ],
+  "main": "./dist/loop.js",
+  "module": "./dist/loop.mjs",
+  "exports": {
+    ".": {
+      "import": "./dist/loop.mjs",
+      "script": "./dist/loop.js",
+      "default": "./dist/loop.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "server"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build --config vite.widget.config.ts",
+    "build:demo": "vite build",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7"
+  },
+  "dependencies": {
+    "modern-screenshot": "^4.6.0"
+  }
+}

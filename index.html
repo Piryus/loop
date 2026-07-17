@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en" data-host-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Northwind Expenses — Loop demo host</title>
+    <style>
+      /*
+        This is a MOCK host application. It exists only so we can design and
+        screenshot the Loop widget overlaid on a realistic app. It is not part
+        of the Loop product. Deliberately neutral & cool-gray so the amber
+        widget has to earn its contrast.
+      */
+      :root {
+        --h-bg: #f4f5f7;
+        --h-surface: #ffffff;
+        --h-border: #e4e7ec;
+        --h-ink: #1a1d24;
+        --h-muted: #667085;
+        --h-accent: #3b6ef6;
+        --h-radius: 12px;
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
+      [data-host-theme="dark"] {
+        --h-bg: #0d1017;
+        --h-surface: #151922;
+        --h-border: #232935;
+        --h-ink: #eef1f6;
+        --h-muted: #8b95a7;
+        --h-accent: #6f9dff;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--h-bg);
+        color: var(--h-ink);
+        -webkit-font-smoothing: antialiased;
+      }
+      .app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+      .sidebar {
+        border-right: 1px solid var(--h-border);
+        background: var(--h-surface);
+        padding: 20px 16px;
+        display: flex; flex-direction: column; gap: 4px;
+      }
+      .brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 20px; font-weight: 700; font-size: 15px; }
+      .brand .dot { width: 26px; height: 26px; border-radius: 8px; background: linear-gradient(135deg, #3b6ef6, #7aa0ff); }
+      .nav a {
+        display: flex; align-items: center; gap: 10px;
+        padding: 9px 10px; border-radius: 8px;
+        color: var(--h-muted); text-decoration: none; font-size: 14px; font-weight: 500;
+      }
+      .nav a.active { background: color-mix(in srgb, var(--h-accent) 12%, transparent); color: var(--h-accent); }
+      .nav a:hover:not(.active) { background: color-mix(in srgb, var(--h-ink) 5%, transparent); color: var(--h-ink); }
+      .nav .ico { width: 16px; height: 16px; border-radius: 5px; background: currentColor; opacity: .55; }
+      .main { padding: 28px 36px; max-width: 1100px; }
+      .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+      h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+      .sub { color: var(--h-muted); font-size: 14px; margin-top: 4px; }
+      .search {
+        border: 1px solid var(--h-border); background: var(--h-surface);
+        border-radius: 10px; padding: 9px 14px; font-size: 14px; color: var(--h-muted); width: 260px;
+      }
+      .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+      .tile { background: var(--h-surface); border: 1px solid var(--h-border); border-radius: var(--h-radius); padding: 18px 20px; }
+      .tile .k { color: var(--h-muted); font-size: 13px; font-weight: 500; }
+      .tile .v { font-size: 26px; font-weight: 700; margin-top: 8px; letter-spacing: -0.02em; }
+      .tile .d { font-size: 12px; margin-top: 6px; color: #12b76a; font-weight: 600; }
+      table { width: 100%; border-collapse: collapse; background: var(--h-surface); border: 1px solid var(--h-border); border-radius: var(--h-radius); overflow: hidden; }
+      thead th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--h-muted); padding: 12px 18px; border-bottom: 1px solid var(--h-border); font-weight: 600; }
+      tbody td { padding: 14px 18px; font-size: 14px; border-bottom: 1px solid var(--h-border); }
+      tbody tr:last-child td { border-bottom: none; }
+      .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+      .pill.ok { background: color-mix(in srgb, #12b76a 14%, transparent); color: #12b76a; }
+      .pill.wait { background: color-mix(in srgb, #f79009 16%, transparent); color: #b54708; }
+      .host-toggle {
+        position: fixed; top: 16px; right: 16px; z-index: 5;
+        border: 1px solid var(--h-border); background: var(--h-surface); color: var(--h-muted);
+        border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <button class="host-toggle" onclick="document.documentElement.dataset.hostTheme = document.documentElement.dataset.hostTheme === 'dark' ? 'light' : 'dark'">
+      toggle host theme
+    </button>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand"><span class="dot"></span> Northwind</div>
+        <nav class="nav">
+          <a href="#"><span class="ico"></span> Overview</a>
+          <a href="#" class="active"><span class="ico"></span> Expenses</a>
+          <a href="#"><span class="ico"></span> Reports</a>
+          <a href="#"><span class="ico"></span> Members</a>
+          <a href="#"><span class="ico"></span> Settings</a>
+        </nav>
+      </aside>
+      <main class="main">
+        <div class="topbar">
+          <div>
+            <h1>Expenses</h1>
+            <div class="sub">14 claims awaiting reimbursement</div>
+          </div>
+          <input class="search" placeholder="Search claims…" />
+        </div>
+        <div class="tiles">
+          <div class="tile"><div class="k">Reimbursed this month</div><div class="v">€12,480</div><div class="d">▲ 8.2%</div></div>
+          <div class="tile"><div class="k">Pending</div><div class="v">€3,215</div><div class="d" style="color:#f79009">6 claims</div></div>
+          <div class="tile"><div class="k">Avg. processing time</div><div class="v">2.4 days</div><div class="d">▼ 0.6d</div></div>
+        </div>
+        <table>
+          <thead><tr><th>Claimant</th><th>Event</th><th>Amount</th><th>Status</th><th>Submitted</th></tr></thead>
+          <tbody>
+            <tr><td>Amara Okafor</td><td>Regional finals — Lyon</td><td>€218.40</td><td><span class="pill ok">Approved</span></td><td>Jul 12</td></tr>
+            <tr><td>Luca Bianchi</td><td>School visit — Nantes</td><td>€96.00</td><td><span class="pill wait">Awaiting</span></td><td>Jul 13</td></tr>
+            <tr><td>Sofia Németh</td><td>Author panel — Paris</td><td>€412.75</td><td><span class="pill ok">Approved</span></td><td>Jul 14</td></tr>
+            <tr><td>Diego Fuentes</td><td>Regional finals — Lyon</td><td>€145.20</td><td><span class="pill wait">Awaiting</span></td><td>Jul 15</td></tr>
+          </tbody>
+        </table>
+      </main>
+    </div>
+    <script type="module" src="/src/dev.ts"></script>
+  </body>
+</html>
