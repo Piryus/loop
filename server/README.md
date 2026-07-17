@@ -15,7 +15,8 @@ runtime you host.
 3. Set env vars:
    ```
    LINEAR_API_KEY=lin_api_xxx
-   LINEAR_TEAM_ID=<team uuid>   # from the team's settings / GraphQL
+   # LINEAR_TEAM_ID=<team uuid>   # optional — auto-discovered when the
+   #                               # workspace has a single team
    ```
 4. Point the widget at your endpoint:
    ```js

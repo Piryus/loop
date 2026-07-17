@@ -32,7 +32,8 @@ export interface LoopSubmission {
 
 interface LinearEnv {
   apiKey: string;
-  teamId: string;
+  /** Optional — auto-discovered when the workspace has a single team. */
+  teamId?: string;
 }
 
 const TYPE_EMOJI: Record<LoopSubmission["type"], string> = {
@@ -104,9 +105,24 @@ function buildDescription(s: LoopSubmission, assetUrl: string | null): string {
   return lines.join("\n");
 }
 
+/** Explicit team id, else the workspace's single team (dedicated-workspace case). */
+async function resolveTeamId(env: LinearEnv): Promise<string> {
+  if (env.teamId) return env.teamId;
+  const { teams } = await gql<{ teams: { nodes: { id: string }[] } }>(
+    env,
+    `query { teams(first: 2) { nodes { id } } }`,
+    {}
+  );
+  if (teams.nodes.length === 0) throw new Error("No team in this Linear workspace");
+  return teams.nodes[0].id;
+}
+
 /** Creates the Linear issue. Returns the issue URL. */
 export async function createLinearIssue(submission: LoopSubmission, env: LinearEnv): Promise<string> {
-  const assetUrl = submission.screenshot ? await uploadScreenshot(env, submission.screenshot) : null;
+  const [teamId, assetUrl] = await Promise.all([
+    resolveTeamId(env),
+    submission.screenshot ? uploadScreenshot(env, submission.screenshot) : Promise.resolve(null),
+  ]);
   const title = `${TYPE_EMOJI[submission.type]} ${truncate(submission.message || submission.type, 80)}`;
 
   const { issueCreate } = await gql<{ issueCreate: { success: boolean; issue: { url: string } } }>(
@@ -114,7 +130,7 @@ export async function createLinearIssue(submission: LoopSubmission, env: LinearE
     `mutation Create($input: IssueCreateInput!) {
       issueCreate(input: $input) { success issue { url } }
     }`,
-    { input: { teamId: env.teamId, title, description: buildDescription(submission, assetUrl) } }
+    { input: { teamId, title, description: buildDescription(submission, assetUrl) } }
   );
 
   if (!issueCreate.success) throw new Error("Linear issueCreate failed");
@@ -128,7 +144,7 @@ function truncate(s: string, n: number): string {
 
 export function readEnv(): LinearEnv {
   const apiKey = process.env.LINEAR_API_KEY;
-  const teamId = process.env.LINEAR_TEAM_ID;
-  if (!apiKey || !teamId) throw new Error("Set LINEAR_API_KEY and LINEAR_TEAM_ID");
-  return { apiKey, teamId };
+  if (!apiKey) throw new Error("Set LINEAR_API_KEY");
+  // LINEAR_TEAM_ID optional — only needed if the workspace has multiple teams.
+  return { apiKey, teamId: process.env.LINEAR_TEAM_ID || undefined };
 }
