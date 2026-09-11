@@ -11,9 +11,22 @@ runtime you host.
 
 1. Create a **dedicated Linear workspace** for feedback (so you can invite the
    host app's team without exposing your other work). Add one team, e.g. `Feedback`.
-2. Create a **personal API key** in that workspace (Settings → API).
+2. Give Loop an identity. Two options:
+
+   **OAuth app (recommended):** issues are created by "Loop", with the name
+   and icon you set on the app, not by a person. In the workspace: Settings →
+   API → OAuth applications → *New*, name it `Loop`, turn on **Client
+   credentials**, create, and copy the client ID and secret. Tokens are
+   requested server-to-server (no consent screen, nothing to persist).
+
+   **Personal API key:** simpler, but every issue is created by that person
+   (Settings → API → Personal API keys).
 3. Set env vars:
    ```
+   # OAuth app mode
+   LINEAR_OAUTH_CLIENT_ID=...
+   LINEAR_OAUTH_CLIENT_SECRET=...
+   # …or personal key mode
    LINEAR_API_KEY=lin_api_xxx
    # LINEAR_TEAM_ID=<team uuid>   # optional — auto-discovered when the
    #                               # workspace has a single team

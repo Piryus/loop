@@ -3,14 +3,21 @@
  * annotated screenshot attached. Framework-agnostic — call `createLinearIssue`
  * from any handler (see server/README.md for a Next.js / Vercel / Node example).
  *
- * Env:
- *   LINEAR_API_KEY   Personal API key for the dedicated feedback workspace.
- *   LINEAR_TEAM_ID   Team the issues are filed under.
+ * Env — pick one auth mode:
+ *   LINEAR_OAUTH_CLIENT_ID + LINEAR_OAUTH_CLIENT_SECRET
+ *                    OAuth app with "client credentials" enabled: issues are
+ *                    created by "Loop" (app actor), not by a person. Tokens
+ *                    are requested on demand and cached in memory (30 days).
+ *   LINEAR_API_KEY   Personal API key — issues are created by that person.
+ *   LINEAR_TEAM_ID   Team the issues are filed under (optional, auto-discovered
+ *                    when the workspace has a single team).
  *
- * Nothing here is Loop-specific beyond the payload shape, and no key ever
+ * Nothing here is Loop-specific beyond the payload shape, and no secret ever
  * reaches the browser — the widget POSTs to your endpoint, your endpoint holds
- * the key and talks to Linear.
+ * the credentials and talks to Linear.
  */
+
+import { accessToken, type OAuthConfig } from "./linear-oauth.ts";
 
 const LINEAR_API = "https://api.linear.app/graphql";
 
@@ -30,10 +37,18 @@ export interface LoopSubmission {
   metadata?: Record<string, string>;
 }
 
+export type LinearAuth =
+  | { kind: "apiKey"; key: string }
+  | { kind: "oauth"; oauth: OAuthConfig };
+
 interface LinearEnv {
-  apiKey: string;
+  auth: LinearAuth;
   /** Optional — auto-discovered when the workspace has a single team. */
   teamId?: string;
+}
+
+async function authorization(auth: LinearAuth): Promise<string> {
+  return auth.kind === "apiKey" ? auth.key : `Bearer ${await accessToken(auth.oauth)}`;
 }
 
 const TYPE_EMOJI: Record<LoopSubmission["type"], string> = {
@@ -46,7 +61,7 @@ const TYPE_EMOJI: Record<LoopSubmission["type"], string> = {
 async function gql<T>(env: LinearEnv, query: string, variables: object): Promise<T> {
   const res = await fetch(LINEAR_API, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: env.apiKey },
+    headers: { "Content-Type": "application/json", Authorization: await authorization(env.auth) },
     body: JSON.stringify({ query, variables }),
   });
   const json = (await res.json()) as { data?: T; errors?: { message: string }[] };
@@ -143,8 +158,12 @@ function truncate(s: string, n: number): string {
 }
 
 export function readEnv(): LinearEnv {
-  const apiKey = process.env.LINEAR_API_KEY;
-  if (!apiKey) throw new Error("Set LINEAR_API_KEY");
   // LINEAR_TEAM_ID optional — only needed if the workspace has multiple teams.
-  return { apiKey, teamId: process.env.LINEAR_TEAM_ID || undefined };
+  const teamId = process.env.LINEAR_TEAM_ID || undefined;
+  const clientId = process.env.LINEAR_OAUTH_CLIENT_ID;
+  const clientSecret = process.env.LINEAR_OAUTH_CLIENT_SECRET;
+  if (clientId && clientSecret) return { auth: { kind: "oauth", oauth: { clientId, clientSecret } }, teamId };
+  const apiKey = process.env.LINEAR_API_KEY;
+  if (!apiKey) throw new Error("Set LINEAR_OAUTH_CLIENT_ID + LINEAR_OAUTH_CLIENT_SECRET, or LINEAR_API_KEY");
+  return { auth: { kind: "apiKey", key: apiKey }, teamId };
 }
