@@ -1,13 +1,17 @@
 // Inline SVGs (currentColor). 24×24, 2px stroke, round joins — one consistent
 // icon family across the whole widget, per the product register.
 
-const svg = (inner: string, w = 24) =>
-  `<svg viewBox="0 0 24 24" width="${w}" height="${w}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+const svg = (inner: string, w = 24, stroke = 2) =>
+  `<svg viewBox="0 0 24 24" width="${w}" height="${w}" fill="none" stroke="currentColor" stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
 
 export const icons = {
-  // Loop mark: a feedback loop — arced arrow returning on itself.
+  // Loop mark ("Orbit"): a thick ring with a dot riding on it, set off by a
+  // gap — feedback going out and coming back. Heavier stroke than the UI icons
+  // so it holds up as a logo; the launcher's 90° open-state turn moves the dot.
   mark: svg(
-    `<path d="M20 11.5a8 8 0 1 0-2.3 5.6"/><path d="M20 6v5h-5"/><circle cx="12" cy="11.5" r="2.4" fill="currentColor" stroke="none"/>`
+    `<path d="M13.39 4.12A8 8 0 1 0 19.88 10.61"/><circle cx="17.66" cy="6.34" r="2.4" fill="currentColor" stroke="none"/>`,
+    24,
+    2.6
   ),
   close: svg(`<path d="M6 6l12 12M18 6L6 18"/>`),
   camera: svg(

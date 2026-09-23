@@ -453,12 +453,12 @@ export class LoopWidget {
     this.set("sending");
     try {
       await ship(payload, this.config);
+      // Clear the draft as soon as it's shipped — closing the panel during the
+      // success screen must not bring the old message/screenshot back.
+      this.reset();
       this.set("success");
       window.setTimeout(() => {
-        if (this.screen === "success") {
-          this.reset();
-          this.close();
-        }
+        if (this.screen === "success") this.close();
       }, 2000);
     } catch (err) {
       this.errorMsg = err instanceof Error ? err.message : "Network error.";
