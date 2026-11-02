@@ -233,7 +233,8 @@ button { font-family: inherit; }
 .loop-foot { padding: 13px 16px; border-top: 1px solid var(--loop-border); display: flex; align-items: center; gap: 12px; }
 .loop-meta { flex: 1; min-width: 0; font-size: 11.5px; color: var(--loop-faint); line-height: 1.35; }
 .loop-meta b { color: var(--loop-muted); font-weight: 600; }
-.loop-meta .loop-meta__row { display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Block, not flex: text-overflow only ellipsizes inline content, a flex item just gets clipped. */
+.loop-meta .loop-meta__row { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .loop-submit {
   display: inline-flex; align-items: center; gap: 8px;
