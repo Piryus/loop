@@ -19,6 +19,9 @@ export interface Strings {
   remove: string;
   send: string;
   from: string;
+  nameLabel: string;
+  sentAs: string;
+  changeName: string;
   sending: string;
   sendingSub: string;
   successTitle: string;
@@ -59,6 +62,9 @@ const en: Strings = {
   remove: "Remove",
   send: "Send feedback",
   from: "From",
+  nameLabel: "Your name",
+  sentAs: "Sending as",
+  changeName: "Change",
   sending: "Sending…",
   sendingSub: "Packing up your screenshot and note.",
   successTitle: "Sent — thank you!",
@@ -99,6 +105,9 @@ const fr: Strings = {
   remove: "Retirer",
   send: "Envoyer",
   from: "Depuis",
+  nameLabel: "Votre nom",
+  sentAs: "Retour envoyé en tant que",
+  changeName: "Modifier",
   sending: "Envoi…",
   sendingSub: "Préparation de votre capture et de votre note.",
   successTitle: "Envoyé — merci !",
@@ -139,6 +148,9 @@ const de: Strings = {
   remove: "Entfernen",
   send: "Senden",
   from: "Von",
+  nameLabel: "Dein Name",
+  sentAs: "Gesendet als",
+  changeName: "Ändern",
   sending: "Wird gesendet…",
   sendingSub: "Screenshot und Notiz werden vorbereitet.",
   successTitle: "Gesendet — danke!",
@@ -179,6 +191,9 @@ const es: Strings = {
   remove: "Quitar",
   send: "Enviar",
   from: "Desde",
+  nameLabel: "Tu nombre",
+  sentAs: "Enviado como",
+  changeName: "Cambiar",
   sending: "Enviando…",
   sendingSub: "Preparando tu captura y tu nota.",
   successTitle: "¡Enviado, gracias!",
@@ -219,6 +234,9 @@ const it: Strings = {
   remove: "Rimuovi",
   send: "Invia",
   from: "Da",
+  nameLabel: "Il tuo nome",
+  sentAs: "Inviato come",
+  changeName: "Modifica",
   sending: "Invio…",
   sendingSub: "Preparazione dello screenshot e della nota.",
   successTitle: "Inviato — grazie!",

@@ -13,6 +13,7 @@ Think Marker.io / Userback, but you host it and own the data.
 - 🌗 **Theme-aware** — follows `prefers-color-scheme`, or force light/dark.
 - 🌍 **Localized** — English, French, German, Spanish, Italian out of the box (auto-detected).
 - 🪶 **Lightweight** — ~21 KB gzipped, one self-contained file, zero runtime peers.
+- 🙋 **Knows who wrote** — asks the reporter's name once and remembers it for 15 days, even on shared or logged-out sessions.
 - ♿️ **Accessible** — keyboard path, focus rings, `Esc` to cancel, reduced-motion fallbacks.
 
 ## Quick start
@@ -37,7 +38,7 @@ import { init } from "@loop/widget";
 init({ endpoint: "/api/feedback", projectKey: "acme-app" });
 ```
 
-The widget POSTs a JSON payload (note, type, annotated screenshot, page context)
+The widget POSTs a JSON payload (note, type, reporter name, annotated screenshot, page context)
 to your `endpoint`. Wire that endpoint to Linear with the reference backend in
 [`server/`](./server/README.md) — it holds your Linear key and creates the issue,
 so no secret ever touches the browser.
@@ -48,13 +49,32 @@ so no secret ever touches the browser.
 |--------------|----------------------------------------|--------------------|-------------|
 | `endpoint`   | `string`                               | —                  | Backend URL that creates the Linear issue. |
 | `projectKey` | `string`                               | —                  | Tag routed with every submission. |
-| `user`       | `{ name?, email?, id? }`               | —                  | Known submitter, shown on the report. |
+| `user`       | `{ name?, email?, id? }`               | —                  | Known submitter, shown on the report. Its `name` pre-fills the reporter name field. |
 | `position`   | `"bottom-right" \| "bottom-left"`      | `"bottom-right"`   | Floating button placement. |
 | `theme`      | `"light" \| "dark" \| "auto"`          | `"auto"`           | Force a theme or follow the system. |
 | `locale`     | `string` (e.g. `"fr"`)                 | `navigator.language` | Force a UI language. |
 | `accent`     | CSS color                              | Loop amber         | Override the pop color. |
 | `metadata`   | `Record<string, string>`               | —                  | Extra fields merged into every report (app version, route…). |
 | `onSubmit`   | `(payload) => void \| Promise<void>`   | —                  | Hook after send; can return a promise the widget awaits. |
+
+### Reporter name
+
+The form asks for the reporter's name, which is required the first time. When
+you pass `user.name`, the field starts with that value and stays editable
+(useful when several people share one account). On send, the widget stores the
+name in a first-party cookie and, from then on, shows `Sending as <name>` with a
+**Change** button instead of the field:
+
+```
+loop_reporter=<URL-encoded name>; Max-Age=1296000; Path=/; SameSite=Lax; Secure
+```
+
+The cookie lasts 15 days and each send refreshes it. It holds the name only
+(`Secure` is added on https). A missing or malformed cookie means the name is
+asked again. The name travels in the payload as `reporter`, separate from
+`user`; the reference backend sanitises it and prints it as the first line of
+the issue's metadata block (`**Tester** · <name>`). Backends that ignore
+`reporter` keep working.
 
 Without an `endpoint`, submissions log to the console — handy for wiring up
 `onSubmit` to your own sink.
@@ -80,6 +100,12 @@ npm run dev          # demo host app + widget at http://localhost:5273
                      #   ?theme=light|dark   ?lang=fr|de|es|it
 ```
 
+## Test
+
+```bash
+npm test             # node --test (Node 22.18+ runs the .ts files directly)
+```
+
 ## Build
 
 ```bash
@@ -95,6 +121,7 @@ src/loop/       widget source (framework-free TypeScript)
   capture.ts      screenshot + region crop
   annotate.ts     canvas annotator (box / arrow / pin)
   i18n.ts         string tables (en/fr/de/es/it)
+  reporter.ts     reporter name cookie (read / store / clean)
   styles.ts       design tokens + component CSS (OKLCH)
 server/         reference Linear backend
 PRODUCT.md      who/what/why    DESIGN.md   the visual system

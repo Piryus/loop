@@ -5,6 +5,7 @@ import { Annotator, type Tool } from "./annotate";
 import { buildContext, browserLabel } from "./env";
 import { ship } from "./submit";
 import { resolveStrings, type Strings } from "./i18n";
+import { REPORTER_MAX_LENGTH, cleanReporter, readReporter, storeReporter } from "./reporter";
 import type { FeedbackPayload, FeedbackType, LoopConfig, Screen } from "./types";
 
 const TYPE_IDS: FeedbackType[] = ["bug", "idea", "question", "praise"];
@@ -28,12 +29,18 @@ export class LoopWidget {
   private shot: Shot | null = null;
   private annotated: string | null = null;
   private errorMsg = "";
+  /** Reporter name; the field shows until one is stored in the cookie. */
+  private reporter: string;
+  private editingReporter: boolean;
 
   constructor(root: HTMLElement, hostEl: Element, config: LoopConfig) {
     this.root = root;
     this.hostEl = hostEl;
     this.config = config;
     this.t = resolveStrings(config.locale);
+    const stored = readReporter();
+    this.reporter = stored ?? cleanReporter(config.user?.name);
+    this.editingReporter = !stored;
     if (config.accent) root.style.setProperty("--loop-primary", config.accent);
     this.build();
   }
@@ -193,7 +200,7 @@ export class LoopWidget {
         )
       )
     );
-    body.append(chips);
+    body.append(chips, this.reporterSection(() => (submit.disabled = !this.canSubmit())));
 
     // footer
     const submit = el("button", {
@@ -204,7 +211,6 @@ export class LoopWidget {
       html: `${icons.send}<span>${this.t.send}</span>`,
     }) as HTMLButtonElement;
 
-    const who = this.config.user?.name ? `${this.config.user.name} · ` : "";
     const foot = el(
       "div",
       { class: "loop-foot" },
@@ -212,12 +218,50 @@ export class LoopWidget {
         "div",
         { class: "loop-meta" },
         el("div", { class: "loop-meta__row" }, el("b", {}, this.t.from), " ", location.pathname),
-        el("div", { class: "loop-meta__row" }, who + browserLabel())
+        el("div", { class: "loop-meta__row" }, browserLabel())
       ),
       submit
     );
 
     return el("div", { class: "loop-panel", role: "dialog", "aria-label": this.t.title }, this.head(), body, foot);
+  }
+
+  /** Name field the first time (required), then a compact "sending as" line. */
+  private reporterSection(onChange: () => void): HTMLElement {
+    if (!this.editingReporter) {
+      return el(
+        "div",
+        { class: "loop-reporter" },
+        el("span", { class: "loop-reporter__text" }, this.t.sentAs, " ", el("b", {}, this.reporter)),
+        el(
+          "button",
+          {
+            class: "loop-linkbtn",
+            type: "button",
+            onClick: () => {
+              this.editingReporter = true;
+              this.set("compose");
+              this.panel?.querySelector<HTMLInputElement>(".loop-input")?.focus();
+            },
+          },
+          this.t.changeName
+        )
+      );
+    }
+    const input = el("input", {
+      class: "loop-input",
+      type: "text",
+      name: "loop-reporter",
+      value: this.reporter,
+      autocomplete: "name",
+      maxLength: REPORTER_MAX_LENGTH,
+      required: true,
+      onInput: (e: Event) => {
+        this.reporter = (e.target as HTMLInputElement).value;
+        onChange();
+      },
+    });
+    return el("label", { class: "loop-field" }, el("span", { class: "loop-field__label" }, this.t.nameLabel), input);
   }
 
   private choices(): HTMLElement {
@@ -437,15 +481,18 @@ export class LoopWidget {
 
   // ---- submit --------------------------------------------------------------
   private canSubmit() {
-    return this.message.trim().length > 0 || !!this.shot;
+    return (this.message.trim().length > 0 || !!this.shot) && cleanReporter(this.reporter).length > 0;
   }
 
   private async doSubmit() {
+    this.reporter = cleanReporter(this.reporter);
+    storeReporter(this.reporter); // also refreshes the cookie for another 15 days
     const payload: FeedbackPayload = {
       type: this.type,
       message: this.message.trim(),
       screenshot: this.annotated ?? this.shot?.canvas.toDataURL("image/png") ?? null,
       context: buildContext(),
+      reporter: this.reporter || undefined,
       user: this.config.user,
       projectKey: this.config.projectKey,
       metadata: this.config.metadata,
@@ -456,6 +503,7 @@ export class LoopWidget {
       // Clear the draft as soon as it's shipped — closing the panel during the
       // success screen must not bring the old message/screenshot back.
       this.reset();
+      this.editingReporter = false;
       this.set("success");
       window.setTimeout(() => {
         if (this.screen === "success") this.close();
