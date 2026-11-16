@@ -213,6 +213,27 @@ button { font-family: inherit; }
 .loop-textarea::placeholder { color: var(--loop-faint); }
 .loop-textarea:focus { outline: none; border-color: var(--loop-primary); box-shadow: var(--loop-ring); }
 
+.loop-field { display: flex; flex-direction: column; gap: 7px; }
+.loop-field__label { font-size: 12px; font-weight: 600; color: var(--loop-muted); letter-spacing: 0.01em; }
+.loop-input {
+  width: 100%; padding: 9px 13px; border-radius: var(--loop-radius-sm);
+  border: 1px solid var(--loop-border); background: var(--loop-surface);
+  color: var(--loop-ink); font-size: 14px; line-height: 1.4; font-family: inherit;
+  transition: border-color 0.16s, box-shadow 0.16s;
+}
+.loop-input:focus { outline: none; border-color: var(--loop-primary); box-shadow: var(--loop-ring); }
+
+.loop-reporter { display: flex; align-items: baseline; gap: 10px; font-size: 12.5px; color: var(--loop-muted); }
+.loop-reporter__text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.loop-reporter b { color: var(--loop-ink); font-weight: 600; }
+.loop-linkbtn {
+  flex: none; padding: 0; border: none; background: none; cursor: pointer;
+  color: var(--loop-ink); font-size: 12.5px; font-weight: 600; font-family: inherit;
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.loop-linkbtn:hover { color: var(--loop-primary); }
+.loop-linkbtn:focus-visible { outline: none; box-shadow: var(--loop-ring); border-radius: 4px; }
+
 .loop-types { display: flex; flex-wrap: wrap; gap: 7px; }
 .loop-chip {
   display: inline-flex; align-items: center; gap: 6px;

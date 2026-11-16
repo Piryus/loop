@@ -11,7 +11,8 @@ export interface LoopConfig {
   theme?: "light" | "dark" | "auto";
   /** Force a locale (e.g. "fr"); otherwise follows navigator.language. */
   locale?: string;
-  /** Known submitter (e.g. logged-in user) attached to the report. */
+  /** Known submitter (e.g. logged-in user) attached to the report. It never
+   *  pre-fills the reporter name field, which several people may share. */
   user?: { name?: string; email?: string; id?: string };
   /** Extra metadata merged into every submission (app version, route, …). */
   metadata?: Record<string, string>;
@@ -35,6 +36,8 @@ export interface FeedbackPayload {
   /** Annotated screenshot as a PNG data URL, when the user attached one. */
   screenshot: string | null;
   context: CaptureContext;
+  /** Name the reporter typed in the widget (remembered in the `loop_reporter` cookie). */
+  reporter?: string;
   user?: LoopConfig["user"];
   projectKey?: string;
   metadata?: Record<string, string>;

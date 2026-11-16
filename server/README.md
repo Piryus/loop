@@ -74,6 +74,12 @@ app.listen(8787);
 
 ## Notes
 
+- **Reporter name**: the widget sends the name typed in the form as `reporter`.
+  `buildDescription` passes it through `sanitizeReporter` (trim, collapse
+  whitespace, strip control characters, links, images and URLs, escape
+  emphasis, 80 characters max) and prints `**Tester** · <name>` first in the
+  metadata block. The `**Reporter**` line still shows the `user` the host app
+  passed. When `reporter` is absent (older widget), the line is left out.
 - **CORS**: if the host app is on a different origin than the endpoint, allow it
   (`Access-Control-Allow-Origin`). Restrict to your known host origins.
 - **Payload size**: annotated PNGs are sent as data URLs; allow ~8MB bodies.

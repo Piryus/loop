@@ -33,6 +33,7 @@
     "build": "vite build --config vite.widget.config.ts",
     "build:demo": "vite build",
     "typecheck": "tsc --noEmit",
+    "test": "node --test test/*.test.ts",
     "preview": "vite preview"
   },
   "devDependencies": {

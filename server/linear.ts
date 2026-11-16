@@ -32,6 +32,8 @@ export interface LoopSubmission {
     language: string;
     capturedAt: string;
   };
+  /** Name typed in the widget (older widget versions do not send it). */
+  reporter?: string;
   user?: { name?: string; email?: string; id?: string };
   projectKey?: string;
   metadata?: Record<string, string>;
@@ -105,11 +107,34 @@ async function uploadScreenshot(env: LinearEnv, dataUrl: string): Promise<string
   return assetUrl;
 }
 
-function buildDescription(s: LoopSubmission, assetUrl: string | null): string {
+const REPORTER_MAX_LENGTH = 80;
+
+/**
+ * Makes the typed reporter name safe to print in the issue: trims, collapses
+ * whitespace, drops control and invisible characters, removes link, image and
+ * autolink syntax and URLs, escapes emphasis, caps the length. Returns null
+ * when nothing is left.
+ */
+export function sanitizeReporter(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  const clean = raw
+    .replace(/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/gu, " ")
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, " $1 ")
+    .replace(/(?:[a-z][a-z0-9+.-]*:\/\/|www\.)\S*/gi, " ")
+    .replace(/[[\]<>`]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const capped = Array.from(clean).slice(0, REPORTER_MAX_LENGTH).join("").trim();
+  return capped ? capped.replace(/[\\*_~|]/g, "\\$&") : null;
+}
+
+export function buildDescription(s: LoopSubmission, assetUrl: string | null): string {
   const lines: string[] = [];
   if (s.message) lines.push(s.message, "");
   if (assetUrl) lines.push(`![screenshot](${assetUrl})`, "");
   lines.push("---");
+  const reporter = sanitizeReporter(s.reporter);
+  if (reporter) lines.push(`**Tester** · ${reporter}`);
   lines.push(`**Page** · ${s.context.url}`);
   lines.push(`**Reporter** · ${s.user?.name ?? "Anonymous"}${s.user?.email ? ` (${s.user.email})` : ""}`);
   lines.push(`**Browser** · ${s.context.userAgent}`);
