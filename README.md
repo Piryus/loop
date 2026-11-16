@@ -49,7 +49,7 @@ so no secret ever touches the browser.
 |--------------|----------------------------------------|--------------------|-------------|
 | `endpoint`   | `string`                               | —                  | Backend URL that creates the Linear issue. |
 | `projectKey` | `string`                               | —                  | Tag routed with every submission. |
-| `user`       | `{ name?, email?, id? }`               | —                  | Known submitter, shown on the report. Its `name` pre-fills the reporter name field. |
+| `user`       | `{ name?, email?, id? }`               | —                  | Known submitter, shown on the report. It does not pre-fill the reporter name field. |
 | `position`   | `"bottom-right" \| "bottom-left"`      | `"bottom-right"`   | Floating button placement. |
 | `theme`      | `"light" \| "dark" \| "auto"`          | `"auto"`           | Force a theme or follow the system. |
 | `locale`     | `string` (e.g. `"fr"`)                 | `navigator.language` | Force a UI language. |
@@ -59,9 +59,9 @@ so no secret ever touches the browser.
 
 ### Reporter name
 
-The form asks for the reporter's name, which is required the first time. When
-you pass `user.name`, the field starts with that value and stays editable
-(useful when several people share one account). On send, the widget stores the
+The form asks for the reporter's name, which is required the first time. The
+field starts empty even when you pass `user`, because several people may share
+one account; `user` is still sent on its own. On send, the widget stores the
 name in a first-party cookie and, from then on, shows `Sending as <name>` with a
 **Change** button instead of the field:
 

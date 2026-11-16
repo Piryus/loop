@@ -39,7 +39,8 @@ export class LoopWidget {
     this.config = config;
     this.t = resolveStrings(config.locale);
     const stored = readReporter();
-    this.reporter = stored ?? cleanReporter(config.user?.name);
+    // Never pre-filled from config.user: several testers may share one account.
+    this.reporter = stored ?? "";
     this.editingReporter = !stored;
     if (config.accent) root.style.setProperty("--loop-primary", config.accent);
     this.build();

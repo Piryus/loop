@@ -11,8 +11,8 @@ export interface LoopConfig {
   theme?: "light" | "dark" | "auto";
   /** Force a locale (e.g. "fr"); otherwise follows navigator.language. */
   locale?: string;
-  /** Known submitter (e.g. logged-in user) attached to the report. Its name
-   *  also pre-fills the reporter name field until a name is stored. */
+  /** Known submitter (e.g. logged-in user) attached to the report. It never
+   *  pre-fills the reporter name field, which several people may share. */
   user?: { name?: string; email?: string; id?: string };
   /** Extra metadata merged into every submission (app version, route, …). */
   metadata?: Record<string, string>;
